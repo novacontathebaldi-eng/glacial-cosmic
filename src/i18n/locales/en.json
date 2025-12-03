@@ -1,0 +1,13 @@
+{
+    "common": {
+        "welcome": "Welcome to o THEBALDI",
+        "login": "Login",
+        "logout": "Logout",
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "files": "Files",
+        "messages": "Messages",
+        "meetings": "Meetings",
+        "profile": "Profile"
+    }
+}

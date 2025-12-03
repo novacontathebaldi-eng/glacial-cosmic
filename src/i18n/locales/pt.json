@@ -1,0 +1,13 @@
+{
+    "common": {
+        "welcome": "Bem-vindo ao o THEBALDI",
+        "login": "Entrar",
+        "logout": "Sair",
+        "dashboard": "Painel",
+        "projects": "Projetos",
+        "files": "Arquivos",
+        "messages": "Mensagens",
+        "meetings": "Reuniões",
+        "profile": "Perfil"
+    }
+}
