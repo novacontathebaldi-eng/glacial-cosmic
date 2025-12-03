@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Minimize2, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { generateAIResponse } from '../../services/ai';
 
 interface Message {
     id: string;
@@ -50,31 +51,40 @@ export default function Chatbot() {
         setIsTyping(true);
 
         try {
-            // Simulate AI response for now
-            // In production, call your AI service/Edge Function here
-            setTimeout(async () => {
-                const aiResponse: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'assistant',
-                    content: "I'm currently in development mode. I can't process complex queries yet, but I'm here to demonstrate the interface!",
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, aiResponse]);
-                setIsTyping(false);
+            // Call AI service
+            const response = await generateAIResponse(userMessage.content, {
+                user_id: user?.id,
+                user_name: user?.user_metadata?.full_name
+            });
 
-                // Save conversation to Supabase if user is logged in
-                if (user) {
-                    await supabase.from('chatbot_memories').insert({
-                        user_id: user.id,
-                        key: 'last_interaction',
-                        value: { user: userMessage.content, ai: aiResponse.content },
-                        context: 'chat_history'
-                    });
-                }
-            }, 1500);
+            const aiResponse: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: response.content,
+                timestamp: new Date()
+            };
+
+            setMessages(prev => [...prev, aiResponse]);
+            setIsTyping(false);
+
+            // Save conversation to Supabase if user is logged in
+            if (user) {
+                await supabase.from('chatbot_memories').insert({
+                    user_id: user.id,
+                    key: 'last_interaction',
+                    value: { user: userMessage.content, ai: aiResponse.content },
+                    context: 'chat_history'
+                });
+            }
         } catch (error) {
             console.error('Error sending message:', error);
             setIsTyping(false);
+            setMessages(prev => [...prev, {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: "Sorry, I encountered an error. Please try again.",
+                timestamp: new Date()
+            }]);
         }
     };
 
@@ -132,8 +142,8 @@ export default function Chatbot() {
                                         >
                                             <div
                                                 className={`max-w-[80%] p-3 rounded-2xl ${msg.role === 'user'
-                                                        ? 'bg-black text-white rounded-br-none'
-                                                        : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'
+                                                    ? 'bg-black text-white rounded-br-none'
+                                                    : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'
                                                     }`}
                                             >
                                                 <p className="text-sm">{msg.content}</p>
